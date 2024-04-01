@@ -96,6 +96,7 @@ impl eframe::App for BoardPhrase {
         egui::CentralPanel::default().show(ctx, |ui| {
             let r = ui.text_edit_singleline(&mut self.phrase);
 
+            // If the text box has no changes since the last update, don't recalculate invalid/valid characters
             if r.changed() {
                 self.invalid_label = "Invalid characters:".to_owned();
                 self.valid_label = "Valid characters:".to_owned();
@@ -112,18 +113,22 @@ impl eframe::App for BoardPhrase {
 
                 for kvp in actual_char_count.iter() {
                     if !self.char_count.contains_key(kvp.0) {
+                        // A character that isn't found
                         self.invalid_label.push_str(format!("\n\t{}: {}", kvp.0, kvp.1).as_str());
                     }
                     else if self.char_count[kvp.0] < *kvp.1 {
+                        // A character is found but there aren't enough characters
                         self.invalid_label.push_str(format!("\n\t{}: {}", kvp.0, kvp.1 - self.char_count[kvp.0]).as_str());
                         self.valid_label.push_str(format!("\n\t{}: {}", kvp.0, self.char_count[kvp.0]).as_str());
                     }
                     else {
+                        // A character is found and ther are enough characters
                         self.valid_label.push_str(format!("\n\t{}: {}", kvp.0, kvp.1).as_str());
                     }
                 }
             }
 
+            // Only print the invalid characters label if there was at least 1 invalid character
             if self.invalid_label != "Invalid characters:" {
                 ui.label(&self.invalid_label);
             }
